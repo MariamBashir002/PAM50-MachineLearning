@@ -1,0 +1,9 @@
+Analysis,Balanced accuracy,SD,Macro F1
+Majority-class baseline (single CV),0.2,,
+"PAM50-only logistic, k=50 (single CV, ceiling)",0.8840127952612585,,0.8700552238338182
+All genes (single CV),0.8440413860321707,,0.8489335522792627
+PAM50 genes removed (single CV),0.8217435768877657,,0.8329822310732812
+All genes (repeated CV),0.843682341131343,0.007388359484265594,
+PAM50 genes removed (repeated CV),0.8333731314555699,0.00917265296103058,
+Top-50 non-PAM50 genes removed (repeated CV),0.8413563880054327,0.007198006153115911,
+"Random 50 genes removed (mean, single CV)",0.8382916274850021,0.0048789340981374284,

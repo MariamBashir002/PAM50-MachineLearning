@@ -20,9 +20,9 @@ from sklearn.metrics import (
     classification_report,
 )
 
-# ============================================================
-# 0. ENVIRONMENT
-# ============================================================
+
+# 0. ---- ENVIRONMENT -----
+
 
 print("=" * 70)
 print("ENVIRONMENT")
@@ -33,10 +33,8 @@ print(f"pandas:  {pd.__version__}")
 print(f"sklearn: {sklearn.__version__}")
 print()
 
+# 1. ---- SETTINGS -----
 
-# ============================================================
-# 1. SETTINGS
-# ============================================================
 
 RANDOM_STATE = 42
 N_SPLITS = 5
@@ -55,12 +53,10 @@ N_CV_SEEDS = 10
 
 os.makedirs("results", exist_ok=True)
 
+# 2. ---- PAM50 GENE LIST -----
 
-# ============================================================
-# 2. PAM50 GENE LIST
-# ============================================================
 
-# Older and newer symbols are both listed for genes that were renamed.
+# -Older and newer symbols are both listed-
 PAM50 = [
     "ACTR3B", "ANLN", "BAG1", "BCL2", "BIRC5", "BLVRA", "CCNB1", "CCNE1",
     "CDC20", "CDC6", "CDH3", "CENPF", "CEP55", "CXXC5", "EGFR", "ERBB2",
@@ -71,7 +67,7 @@ PAM50 = [
     "TMEM45B", "TYMS", "UBE2C", "UBE2T", "MYC",
 ]
 
-# If a PAM50 gene is missing under one symbol, try the alternate symbol.
+# - Try alternate symbols just in case -
 PAM50_ALIASES = {
     "KNTC2": "NDC80",
     "CDCA1": "NUF2",
@@ -80,9 +76,8 @@ PAM50_ALIASES = {
 }
 
 
-# ============================================================
-# 3. LOAD DATA
-# ============================================================
+# 3. ---- LOAD DATA -----
+
 
 expr = pd.read_csv("data/HiSeqV2.gz", sep="\t", index_col=0)  # genes x samples
 clin = pd.read_csv("data/BRCA_clinicalMatrix.tsv", sep="\t", index_col=0)
@@ -108,9 +103,9 @@ print(y.value_counts())
 print()
 
 
-# ============================================================
-# 4. PAM50 GENES PRESENT IN THE DATA (WITH ALIASES)
-# ============================================================
+
+# 4. ---- PAM50 GENES PRESENT IN THE DATA  -----
+
 
 present = []
 missing = []
@@ -147,9 +142,8 @@ else:
 print()
 
 
-# ============================================================
-# 5. FEATURE SETS
-# ============================================================
+# 5. ---- FEATURE SETS -----
+
 
 X_no_pam50 = X_all.drop(columns=present)
 X_pam50_only = X_all[present]
@@ -164,9 +158,9 @@ print(f"PAM50 genes removed: {len(present)}")
 print()
 
 
-# ============================================================
-# 6. CROSS-VALIDATION HELPERS
-# ============================================================
+
+# 6. ---- CROSS-VALIDATION HELPERS -----
+
 
 def make_cv(seed=RANDOM_STATE):
     return StratifiedKFold(n_splits=N_SPLITS, shuffle=True, random_state=seed)
@@ -209,11 +203,8 @@ def corrected_paired_ttest(a, b):
     return d.mean(), t, p
 
 
-# ============================================================
-# 7. MODEL DEFINITIONS
-# ============================================================
-# Gene selection is inside the pipeline, so it is redone on the training
-# samples of each fold only. That keeps test samples out of gene selection.
+# 7. ---- MODEL DEFINITIONS -----
+
 
 def make_logistic(k=K):
     return Pipeline([
@@ -249,9 +240,9 @@ def make_models(k=K):
     }
 
 
-# ============================================================
-# 8. BASELINES
-# ============================================================
+
+# 8. ---- BASELINES -----
+
 
 print("=" * 70)
 print("BASELINES")
@@ -284,9 +275,8 @@ print(f"Macro F1:          {f1_pam50_only:.3f}")
 print()
 
 
-# ============================================================
-# 9. MAIN MODEL EVALUATION (SINGLE CV RUN, SEED 42)
-# ============================================================
+# 9. ---- MAIN MODEL EVALUATION -----
+
 
 def evaluate_models(X, y, label):
     print("\n" + "=" * 70)
@@ -322,9 +312,9 @@ evaluate_models(X_all, y, "ALL GENES")
 evaluate_models(X_no_pam50, y, "PAM50 GENES REMOVED")
 
 
-# ============================================================
-# 10. FEATURE-NUMBER SENSITIVITY (k was fixed at 500 in advance)
-# ============================================================
+
+# 10. ---- FEATURE-NUMBER SENSITIVITY (k was fixed at 500) -----
+
 
 print("\n" + "=" * 70)
 print("FEATURE NUMBER SENSITIVITY")
@@ -351,9 +341,9 @@ print(k_results_df.to_string(index=False))
 k_results_df.to_csv("results/k_sensitivity.csv", index=False)
 
 
-# ============================================================
-# 11. REPEATED CV: ALL GENES vs PAM50 REMOVED
-# ============================================================
+
+# 11. ---- REPEATED CV: ALL GENES vs PAM50 REMOVED -----
+
 
 print("\n" + "=" * 70)
 print(
@@ -374,9 +364,8 @@ print(f"PAM50 removed: {mean_no_pam50:.4f} +/- {sd_no_pam50:.4f}")
 print(f"Difference (PAM50 removed - all): {mean_no_pam50 - mean_all:+.4f}")
 
 
-# ============================================================
-# 12. RANDOM-GENE REMOVAL CONTROL (SINGLE SPLIT, SEED 42)
-# ============================================================
+# 12. ---- RANDOM-GENE REMOVAL CONTROL (SINGLE SPLIT, SEED 42) -----
+
 
 print("\n" + "=" * 70)
 print(
@@ -405,13 +394,9 @@ print(
 )
 
 
-# ============================================================
-# 12b. CONTROL: REMOVE THE MOST INFORMATIVE NON-PAM50 GENES
-# ============================================================
-# Random genes are mostly uninformative, so removing them costs almost
-# nothing. A fairer control removes as many equally informative genes.
-# Ranking genes with all labels is fine here: removal can only lower the
-# score, so it cannot inflate it.
+
+# 12b. ---- CONTROL: REMOVE THE MOST INFORMATIVE NON-PAM50 GENES -----
+
 
 print("\n" + "=" * 70)
 print("CONTROL: REMOVE TOP-INFORMATIVE NON-PAM50 GENES")
@@ -435,9 +420,8 @@ print(
 print(f"Top-{len(present)} non-PAM50 genes removed:      {mean_top:.4f} +/- {sd_top:.4f}")
 
 
-# ============================================================
-# 13. PAIRED COMPARISONS (same splits, corrected resampled t-test)
-# ============================================================
+
+# 13. ---- PAIRED COMPARISONS (same splits, corrected resampled t-test) -----
 
 print("\n" + "=" * 70)
 print("PAIRED COMPARISONS")
@@ -460,9 +444,8 @@ pd.DataFrame(
     columns=["Comparison", "Mean difference", "t", "p"],
 ).to_csv("results/paired_tests.csv", index=False)
 
-# ============================================================
-# 14. SUMMARY
-# ============================================================
+
+# 14. ---- SUMMARY -----
 
 print("\n" + "=" * 70)
 print("FINAL SUMMARY")
